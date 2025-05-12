@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <!-- Background -->
+  <rect width="800" height="400" fill="#ffffff" />
+  
+  <!-- Title -->
+  <text x="400" y="40" font-family="Arial" font-size="24" fill="#333" text-anchor="middle" font-weight="bold">Transport Network Equity Gaps</text>
+  
+  <!-- High Severity Card 1 -->
+  <rect x="50" y="80" width="220" height="140" rx="8" ry="8" fill="#ffffff" stroke="#dc3545" stroke-width="3" />
+  <rect x="50" y="80" width="220" height="30" rx="8" ry="8" fill="#dc3545" />
+  <text x="160" y="100" font-family="Arial" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="bold">HIGH SEVERITY</text>
+  <text x="60" y="130" font-family="Arial" font-size="16" fill="#333" font-weight="bold">Poor connectivity in North</text>
+  <text x="60" y="150" font-family="Arial" font-size="16" fill="#333" font-weight="bold">Manchester suburban areas</text>
+  <text x="60" y="180" font-family="Arial" font-size="12" fill="#666">Residents in northern suburban areas have</text>
+  <text x="60" y="200" font-family="Arial" font-size="12" fill="#666">significantly reduced access to central</text>
+  <text x="60" y="220" font-family="Arial" font-size="12" fill="#666">services and employment opportunities.</text>
+  
+  <!-- Medium Severity Card -->
+  <rect x="290" y="80" width="220" height="140" rx="8" ry="8" fill="#ffffff" stroke="#ffc107" stroke-width="3" />
+  <rect x="290" y="80" width="220" height="30" rx="8" ry="8" fill="#ffc107" />
+  <text x="400" y="100" font-family="Arial" font-size="14" fill="#212529" text-anchor="middle" font-weight="bold">MEDIUM SEVERITY</text>
+  <text x="300" y="130" font-family="Arial" font-size="16" fill="#333" font-weight="bold">Limited evening services in</text>
+  <text x="300" y="150" font-family="Arial" font-size="16" fill="#333" font-weight="bold">South-East communities</text>
+  <text x="300" y="180" font-family="Arial" font-size="12" fill="#666">Off-peak and evening services are</text>
+  <text x="300" y="200" font-family="Arial" font-size="12" fill="#666">insufficient in south-eastern communities,</text>
+  <text x="300" y="220" font-family="Arial" font-size="12" fill="#666">limiting access to leisure opportunities.</text>
+  
+  <!-- High Severity Card 2 -->
+  <rect x="530" y="80" width="220" height="140" rx="8" ry="8" fill="#ffffff" stroke="#dc3545" stroke-width="3" />
+  <rect x="530" y="80" width="220" height="30" rx="8" ry="8" fill="#dc3545" />
+  <text x="640" y="100" font-family="Arial" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="bold">HIGH SEVERITY</text>
+  <text x="540" y="130" font-family="Arial" font-size="16" fill="#333" font-weight="bold">Inadequate cross-town</text>
+  <text x="540" y="150" font-family="Arial" font-size="16" fill="#333" font-weight="bold">connections</text>
+  <text x="540" y="180" font-family="Arial" font-size="12" fill="#666">Direct connections between eastern and</text>
+  <text x="540" y="200" font-family="Arial" font-size="12" fill="#666">western communities are limited, resulting</text>
+  <text x="540" y="220" font-family="Arial" font-size="12" fill="#666">in excessive journey times and transfers.</text>
+  
+  <!-- High Severity Card 3 -->
+  <rect x="50" y="240" width="220" height="140" rx="8" ry="8" fill="#ffffff" stroke="#dc3545" stroke-width="3" />
+  <rect x="50" y="240" width="220" height="30" rx="8" ry="8" fill="#dc3545" />
+  <text x="160" y="260" font-family="Arial" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="bold">HIGH SEVERITY</text>
+  <text x="60" y="290" font-family="Arial" font-size="16" fill="#333" font-weight="bold">Limited accessibility for</text>
+  <text x="60" y="310" font-family="Arial" font-size="16" fill="#333" font-weight="bold">mobility-impaired passengers</text>
+  <text x="60" y="340" font-family="Arial" font-size="12" fill="#666">Many older stations lack full accessibility</text>
+  <text x="60" y="360" font-family="Arial" font-size="12" fill="#666">features, creating significant barriers for</text>
+  <text x="60" y="380" font-family="Arial" font-size="12" fill="#666">mobility-impaired passengers.</text>
+  
+  <!-- Medium Severity Card 2 -->
+  <rect x="290" y="240" width="220" height="140" rx="8" ry="8" fill="#ffffff" stroke="#ffc107" stroke-width="3" />
+  <rect x="290" y="240" width="220" height="30" rx="8" ry="8" fill="#ffc107" />
+  <text x="400" y="260" font-family="Arial" font-size="14" fill="#212529" text-anchor="middle" font-weight="bold">MEDIUM SEVERITY</text>
+  <text x="300" y="290" font-family="Arial" font-size="16" fill="#333" font-weight="bold">Infrequent connections to</text>
+  <text x="300" y="310" font-family="Arial" font-size="16" fill="#333" font-weight="bold">hospital facilities</text>
+  <text x="300" y="340" font-family="Arial" font-size="12" fill="#666">Southern communities have limited direct</text>
+  <text x="300" y="360" font-family="Arial" font-size="12" fill="#666">transport links to major healthcare facilities,</text>
+  <text x="300" y="380" font-family="Arial" font-size="12" fill="#666">increasing journey times for appointments.</text>
+</svg>
