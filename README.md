@@ -6,6 +6,43 @@ An advanced analytical framework for public transport networks, focusing on comm
 
 **Live Demo:** [View the Interactive Dashboard](https://al-kaisi.github.io/transport-network-analysis/)
 
+## Key Findings & Recommendations for Local Council
+
+### Dashboard Analysis Outcomes
+
+1. **Critical Nodes Vulnerability**
+   - Several major transport hubs identified as critical to the entire network
+   - Disruption to these hubs would significantly impact journey times across Greater Manchester
+
+2. **Community Structure Imbalance**
+   - Network divides into distinct transport communities with uneven connectivity
+   - Northern suburban areas show particularly poor integration with the central network
+
+3. **Equity Gaps**
+   - Significant transport inequality across the region
+   - Poor connectivity in North Manchester suburban areas
+   - Limited evening services in South-East communities
+   - Inadequate cross-town connections between eastern and western areas
+
+4. **Network Resilience Issues**
+   - Limited redundancy when critical nodes experience disruption
+   - Some communities at risk of isolation during service disruptions
+
+### Recommended Actions
+
+1. **Short-Term Priorities**
+   - Create redundant routes to improve network resilience
+   - Increase cross-community connections between adjacent poorly-connected areas
+   - Extend evening and weekend services in underserved communities
+
+2. **Strategic Planning**
+   - Develop dedicated east-west transit corridors
+   - Target investment in areas with highest equity gaps
+   - Implement resilience-focused infrastructure planning
+   - Develop community-based service planning based on actual travel patterns
+
+This analysis provides data-driven evidence to support transport planning decisions and help create a more equitable and resilient network for all Greater Manchester residents.
+
 ## Table of Contents
 
 - [Overview](#overview)
