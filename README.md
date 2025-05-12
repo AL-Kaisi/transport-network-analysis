@@ -1,12 +1,12 @@
 # Greater Manchester Transport Network Analysis
 
-![Greater Manchester Transport Network](docs/assets/communities.png)
+![Greater Manchester Transport Network](docs/assets/critical_nodes.png)
 
 An advanced analytical framework for public transport networks, focusing on community detection, critical node identification, and equity analysis using graph theory and network science.
 
 **Live Demo:** [View the Interactive Dashboard](https://al-kaisi.github.io/transport-network-analysis/)
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -21,13 +21,13 @@ An advanced analytical framework for public transport networks, focusing on comm
 - [Contributing](#contributing)
 - [Licence](#licence)
 
-## 🌟 Overview
+## Overview
 
 This project analyses Greater Manchester's public transport network to provide insights for transport planning, equity assessment, and resilience improvement. It transforms GTFS transit data into a network graph, where stops are nodes and connections are edges, then applies advanced network analysis techniques to extract meaningful patterns and insights.
 
 The application is designed to help transport planners, local authorities, and community organisations make data-driven decisions about public transport improvements, with a focus on identifying service gaps and critical infrastructure.
 
-## ✨ Features
+## Features
 
 - **Community Detection:** Identify naturally occurring transport service clusters
 - **Critical Node Analysis:** Pinpoint the most important stops and stations for network resilience
@@ -37,7 +37,7 @@ The application is designed to help transport planners, local authorities, and c
 - **Accessible UI:** Clear explanations for both technical and non-technical users
 - **Performance Optimised:** Handles large transit networks with thousands of stops
 
-## 🏗️ System Architecture
+## System Architecture
 
 ### System Architecture Diagram
 
@@ -98,21 +98,12 @@ The system follows a modular architecture:
    - Logical reasoning about network properties
    - Improvement recommendation generation
 
-## 📸 Dashboard Examples
-
-### Transport Network Communities
-![Transport Network Communities](docs/assets/communities.png)
-*The coloured clusters represent different transport communities - areas with strong internal connections.*
-
-### Network Accessibility Heatmap
-![Accessibility Analysis](docs/assets/accessibility_heatmap.png)
-*This heatmap shows how accessible different areas are from one another. Darker colours indicate better connections between communities.*
+## Dashboard Example
 
 ### Critical Transport Nodes
-![Critical Nodes](docs/assets/critical_nodes.png)
-*Highlights the most crucial transport hubs in the network, where disruption would cause the most significant impact.*
+*This visualisation highlights the most crucial transport hubs in the network, where disruption would cause the most significant impact. Larger nodes represent stops with higher centrality values that are more important for maintaining network connectivity.*
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -145,7 +136,7 @@ The system follows a modular architecture:
    # Edit .env file with your GTFS data source and preferences
    ```
 
-## 📊 Usage Guide
+## Usage Guide
 
 ### Running the Analysis
 
@@ -168,7 +159,7 @@ python enhanced_dashboard.py
 
 The dashboard will be available at http://127.0.0.1:9090 in your web browser.
 
-## 📑 Dashboard Tabs
+## Dashboard Tabs
 
 ### 1. Network Overview
 Shows high-level metrics about the transport network including number of stops, connections, communities detected, and network density. Includes a visualisation of the community structure and how communities connect to each other.
@@ -188,7 +179,7 @@ Allows transport planners to simulate the impact of:
 - Adding connections between communities
 - Improving service in vulnerable areas
 
-## 🔍 Analysis Process
+## Analysis Process
 
 1. **Data Loading:** Extract GTFS data (stops, routes, trips, stop_times)
 2. **Graph Construction:** Build network representation with weighted edges
@@ -200,7 +191,7 @@ Allows transport planners to simulate the impact of:
 8. **Knowledge Base Creation:** Convert graph properties to logical statements
 9. **Symbolic Reasoning:** Draw conclusions about network strengths/weaknesses
 
-## ⚡ Optimisations
+## Optimisations
 
 For analysing large transport networks, the framework includes:
 
@@ -210,7 +201,7 @@ For analysing large transport networks, the framework includes:
 - **Result Caching:** Stores intermediate results to speed up future runs
 - **Approximation Algorithms:** Uses faster approximations for complex metrics
 
-## 🌐 Deployment
+## Deployment
 
 ### GitHub Pages Deployment
 
@@ -230,7 +221,7 @@ For deploying as a web service:
 gunicorn enhanced_dashboard:server
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -240,13 +231,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 Licence
+## Licence
 
 This project is licensed under the MIT Licence - see the LICENCE file for details.
 
 ---
 
-## 🔗 Related Resources
+## Related Resources
 
 - [Transport for Greater Manchester](https://tfgm.com/)
 - [GTFS Reference](https://gtfs.org/reference/static)
