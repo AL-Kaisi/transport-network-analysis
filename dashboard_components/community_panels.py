@@ -1,255 +1,194 @@
 """
-Community analysis components for the dashboard.
+Community panels component for the transport network dashboard.
 """
 
 import dash
-from dash import html, dcc, dash_table
+from dash import html, dcc
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
-import numpy as np
 import base64
-from typing import Dict, Any, List, Optional
 
-def community_statistics_panel(community_analysis: Dict[int, Dict[str, Any]]) -> html.Div:
+def create_community_stats_table(community_data):
     """
-    Create a panel with community statistics.
+    Create a table showing statistics for each community.
     
     Args:
-        community_analysis: Dictionary with community analysis results
+        community_data: Dictionary with community analysis data
         
     Returns:
-        Dash HTML component
+        Dash component
     """
-    # Create DataFrame for table
-    data = []
-    for comm_id, metrics in community_analysis.items():
-        data.append({
-            'Community ID': comm_id,
-            'Size': metrics.get('size', 0),
-            'Density': f"{metrics.get('density', 0):.4f}",
-            'Avg. Degree': f"{metrics.get('avg_degree', 0):.2f}",
-            'Largest CC Ratio': f"{metrics.get('largest_cc_ratio', 0):.2f}" if 'largest_cc_ratio' in metrics else 'N/A'
+    if not community_data:
+        return html.Div([
+            html.P("No community data available. Run analysis to see community statistics.")
+        ], className="text-center p-3")
+    
+    # Convert to DataFrame for easier handling
+    rows = []
+    for comm_id, data in community_data.items():
+        rows.append({
+            "Community ID": comm_id,
+            "Size": data.get("size", 0),
+            "Density": f"{data.get('density', 0):.4f}",
+            "Avg. Degree": f"{data.get('avg_degree', 0):.2f}",
+            "Has Geographic Data": "Yes" if data.get("center_lat") is not None else "No"
         })
     
-    df = pd.DataFrame(data)
-    df = df.sort_values('Size', ascending=False)
+    if not rows:
+        return html.Div([
+            html.P("No community data available. Run analysis to see community statistics.")
+        ], className="text-center p-3")
+    
+    # Create table
+    df = pd.DataFrame(rows)
     
     return html.Div([
         html.H4("Community Statistics", className="mb-3"),
-        
-        dash_table.DataTable(
-            data=df.to_dict('records'),
-            columns=[
-                {'name': col, 'id': col} for col in df.columns
-            ],
-            style_header={
-                'backgroundColor': 'rgb(230, 230, 230)',
-                'fontWeight': 'bold'
-            },
-            style_cell={
-                'textAlign': 'left',
-                'padding': '10px'
-            },
-            style_data_conditional=[
-                {
-                    'if': {'row_index': 'odd'},
-                    'backgroundColor': 'rgb(248, 248, 248)'
-                }
-            ],
-            page_size=10,
-            sort_action='native',
-            filter_action='native',
-            style_table={'overflowX': 'auto'}
-        )
+        dbc.Table.from_dataframe(
+            df.sort_values("Size", ascending=False).head(15),
+            striped=True,
+            bordered=True,
+            hover=True,
+            responsive=True,
+            className="mb-3"
+        ),
+        html.P(f"Showing top 15 of {len(df)} communities by size", className="text-muted")
     ])
 
-def community_heatmap(community_data: pd.DataFrame) -> dcc.Graph:
+def create_accessibility_heatmap(accessibility_data):
     """
-    Create a heatmap of community metrics.
+    Create a heatmap showing accessibility between communities.
     
     Args:
-        community_data: DataFrame with community metrics
+        accessibility_data: Dictionary with accessibility data
         
     Returns:
-        Dash Graph component
+        Plotly figure object
     """
-    # Select columns for heatmap
-    cols = ['size', 'avg_degree', 'density']
+    if not accessibility_data:
+        fig = go.Figure()
+        fig.update_layout(
+            title="Community Accessibility (No Data)",
+            annotations=[{
+                "text": "No accessibility data available.",
+                "xref": "paper",
+                "yref": "paper",
+                "x": 0.5,
+                "y": 0.5,
+                "showarrow": False
+            }]
+        )
+        return fig
     
-    if 'accessibility_score' in community_data.columns:
-        cols.append('accessibility_score')
+    # Extract data for heatmap
+    communities = sorted(list(accessibility_data.keys()))
+    z_data = []
     
-    if 'external_connectivity' in community_data.columns:
-        cols.append('external_connectivity')
-    
-    # Normalize data for better visualization
-    df = community_data.copy()
-    for col in cols:
-        max_val = df[col].max()
-        if max_val > 0:
-            df[f"{col}_norm"] = df[col] / max_val
-    
-    # Sort by size
-    df = df.sort_values('size', ascending=False).head(20)
+    for comm1 in communities:
+        row = []
+        for comm2 in communities:
+            value = accessibility_data.get(comm1, {}).get(comm2, 0)
+            row.append(value)
+        z_data.append(row)
     
     # Create heatmap
     fig = go.Figure(data=go.Heatmap(
-        z=df[[f"{col}_norm" for col in cols]].values,
-        x=cols,
-        y=df['community_id'].astype(str),
+        z=z_data,
+        x=[f"C{c}" for c in communities],
+        y=[f"C{c}" for c in communities],
         colorscale='Viridis',
-        hoverongaps=False
+        colorbar=dict(title="Accessibility Score")
     ))
     
     fig.update_layout(
-        title="Community Metrics Heatmap",
-        xaxis_title="Metric",
-        yaxis_title="Community ID",
-        yaxis_categoryorder='total ascending'
+        title="Community Accessibility",
+        xaxis_title="Destination Community",
+        yaxis_title="Origin Community"
     )
     
-    return dcc.Graph(figure=fig)
+    return fig
 
-def community_map_panel(image_path: Optional[str] = None) -> html.Div:
+def encode_image(image_path):
     """
-    Create a panel with the community map.
+    Encode an image file as base64.
     
     Args:
-        image_path: Path to the community visualization image
+        image_path: Path to the image file
         
     Returns:
-        Dash HTML component
+        Base64 encoded image string
     """
-    content = []
+    try:
+        with open(image_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode()
+        return f"data:image/png;base64,{encoded}"
+    except Exception as e:
+        return ""
+
+def create_communities_tab(community_data, accessibility_data, visualization_path):
+    """
+    Create the Communities tab content.
     
-    if image_path and os.path.exists(image_path):
-        # Read image file
-        with open(image_path, 'rb') as f:
-            encoded_image = base64.b64encode(f.read()).decode('utf-8')
-            
-        content.append(html.Img(
-            src=f"data:image/png;base64,{encoded_image}",
-            style={'width': '100%', 'max-width': '1000px'}
-        ))
-    else:
-        content.append(html.Div(
-            "Community visualization not available",
-            className="text-center p-5 bg-light"
-        ))
-    
+    Args:
+        community_data: Dictionary with community analysis data
+        accessibility_data: Dictionary with accessibility data
+        visualization_path: Path to the community visualization image
+        
+    Returns:
+        Dash component
+    """
     return html.Div([
-        html.H4("Community Map", className="mb-3"),
-        html.Div(content, className="text-center")
-    ])
-
-def community_accessibility_chart(accessibility_data: Dict[int, Dict[str, Any]]) -> dcc.Graph:
-    """
-    Create a chart showing community accessibility.
-    
-    Args:
-        accessibility_data: Dictionary with community accessibility metrics
+        html.H2("Transport Network Communities", className="mb-4"),
         
-    Returns:
-        Dash Graph component
-    """
-    # Create DataFrame
-    data = []
-    for comm_id, metrics in accessibility_data.items():
-        data.append({
-            'community_id': comm_id,
-            'size': metrics.get('size', 0),
-            'accessibility_score': metrics.get('accessibility_score', 0),
-            'external_connectivity': metrics.get('external_connectivity', 0),
-            'connected_communities': metrics.get('connected_communities', 0)
-        })
-    
-    df = pd.DataFrame(data)
-    
-    # Sort by accessibility score
-    df = df.sort_values('accessibility_score', ascending=False).head(20)
-    
-    # Create figure
-    fig = px.scatter(
-        df,
-        x='external_connectivity',
-        y='accessibility_score',
-        size='size',
-        color='connected_communities',
-        hover_name='community_id',
-        title="Community Accessibility Analysis",
-        labels={
-            'external_connectivity': 'External Connectivity',
-            'accessibility_score': 'Accessibility Score',
-            'size': 'Community Size',
-            'connected_communities': 'Connected Communities'
-        }
-    )
-    
-    fig.update_layout(
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=40, r=40, t=40, b=40),
-        hovermode='closest'
-    )
-    
-    return dcc.Graph(figure=fig)
-
-def create_communities_tab(
-    community_analysis: Dict[int, Dict[str, Any]],
-    community_accessibility: Dict[int, Dict[str, Any]],
-    image_path: Optional[str] = None
-) -> html.Div:
-    """
-    Create the communities analysis tab.
-    
-    Args:
-        community_analysis: Dictionary with community analysis results
-        community_accessibility: Dictionary with community accessibility metrics
-        image_path: Path to the community visualization image
-        
-    Returns:
-        Dash HTML component
-    """
-    # Create DataFrames
-    analysis_df = pd.DataFrame.from_dict(
-        {k: v for k, v in community_analysis.items() if isinstance(v, dict)},
-        orient='index'
-    ).reset_index().rename(columns={'index': 'community_id'})
-    
-    accessibility_df = pd.DataFrame.from_dict(
-        {k: v for k, v in community_accessibility.items() if isinstance(v, dict)},
-        orient='index'
-    ).reset_index().rename(columns={'index': 'community_id'})
-    
-    return html.Div([
-        html.H2("Community Analysis", className="mb-4"),
-        
-        # Community map
+        # Communities visualization and stats
         dbc.Row([
+            # Community visualization
             dbc.Col([
-                community_map_panel(image_path)
-            ], width=12)
+                dbc.Card([
+                    dbc.CardBody([
+                        html.H4("Community Visualization"),
+                        html.Img(
+                            src=encode_image(visualization_path),
+                            style={'width': '100%', 'max-width': '100%'},
+                            className="img-fluid"
+                        ) if visualization_path else html.P("No visualization available")
+                    ])
+                ])
+            ], width=7),
+            
+            # Community statistics
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        create_community_stats_table(community_data)
+                    ])
+                ])
+            ], width=5)
         ], className="mb-4"),
         
-        # Community statistics
-        dbc.Row([
-            dbc.Col([
-                community_statistics_panel(community_analysis)
-            ], width=12)
+        # Community accessibility
+        dbc.Card([
+            dbc.CardBody([
+                html.H4("Community Accessibility Analysis"),
+                dcc.Graph(figure=create_accessibility_heatmap(accessibility_data))
+            ])
         ], className="mb-4"),
         
-        # Community metrics
-        dbc.Row([
-            dbc.Col([
-                html.H4("Community Metrics Comparison", className="mb-3"),
-                community_heatmap(analysis_df)
-            ], width=12, lg=6),
-            
-            dbc.Col([
-                html.H4("Community Accessibility", className="mb-3"),
-                community_accessibility_chart(community_accessibility)
-            ], width=12, lg=6)
+        # Community analysis summary
+        dbc.Card([
+            dbc.CardBody([
+                html.H4("Community Analysis Summary"),
+                html.P([
+                    "The transport network of Greater Manchester is divided into communities based on the strength of connections ",
+                    "between stops. Each community represents a set of stops that are more densely connected to each other than ",
+                    "to the rest of the network."
+                ]),
+                html.P([
+                    "Communities typically represent geographic areas or transit corridors with strong internal connectivity. ",
+                    "The analysis helps identify areas that may benefit from improved inter-community connections."
+                ])
+            ])
         ])
-    ])
+    ], className="p-3")

@@ -1,0 +1,42 @@
+[
+  {
+    "description": "Poor connectivity in North Manchester suburban areas",
+    "severity": "high",
+    "metric": "accessibility_index",
+    "value": 0.342,
+    "affected_communities": [12, 18, 23],
+    "details": "Residents in northern suburban areas have significantly reduced access to central services and employment opportunities."
+  },
+  {
+    "description": "Limited evening services in South-East communities",
+    "severity": "medium",
+    "metric": "off_peak_coverage",
+    "value": 0.527,
+    "affected_communities": [7, 15, 31],
+    "details": "Off-peak and evening services are insufficient in south-eastern communities, limiting access to leisure and shift-work opportunities."
+  },
+  {
+    "description": "Inadequate cross-town connections between eastern and western areas",
+    "severity": "high",
+    "metric": "east_west_transit_time",
+    "value": 68.4,
+    "affected_communities": [5, 9, 14, 22],
+    "details": "Direct connections between eastern and western communities are limited, resulting in excessive journey times and transfers."
+  },
+  {
+    "description": "Limited accessibility for mobility-impaired passengers at older stations",
+    "severity": "high",
+    "metric": "accessibility_stations_ratio",
+    "value": 0.413,
+    "affected_communities": [3, 8, 11, 25],
+    "details": "Many older stations lack full accessibility features, creating significant barriers for mobility-impaired passengers."
+  },
+  {
+    "description": "Infrequent connections to hospital facilities from southern communities",
+    "severity": "medium",
+    "metric": "healthcare_access_index",
+    "value": 0.621,
+    "affected_communities": [16, 19, 27],
+    "details": "Southern communities have limited direct transport links to major healthcare facilities, increasing journey times for medical appointments."
+  }
+]

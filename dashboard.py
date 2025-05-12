@@ -17,7 +17,7 @@ import matplotlib
 from dotenv import load_dotenv
 
 # Import our project modules
-from src.data_processing.gtfs_loader import GTFSLoader
+from src.data_processing.gtfs_loader import EnhancedGTFSLoader as GTFSLoader
 from src.graph_analysis.graph_builder import TransportGraphBuilder
 from src.graph_analysis.community_detection import CommunityDetector
 from src.symbolic_ai.knowledge_base import TransportKnowledgeBase
@@ -340,11 +340,10 @@ def create_layout():
         ], style={'padding': '20px', 'border': '1px solid #ddd', 'margin-bottom': '20px'})
     ])
 
-# Load initial data
-load_data()
-
-# Set the app layout
+# Set the app layout - don't load data initially
 app.layout = create_layout()
+
+# We'll load data only when requested via button click
 
 # Callback for loading data
 @app.callback(
@@ -360,4 +359,12 @@ def load_data_callback(n_clicks):
 
 # Run the app with the updated method
 if __name__ == '__main__':
-    app.run(debug=True)  # Changed from run_server to run
+    print("\n==================================================")
+    print("Transport Network Analysis Dashboard")
+    print("==================================================")
+    print("\nDashboard is running on:")
+    print("http://127.0.0.1:8070")
+    print("http://localhost:8070")
+    print("\nPress CTRL+C to stop the server")
+    print("==================================================\n")
+    app.run(debug=False, port=8070)  # Running on port 8070

@@ -12,7 +12,7 @@ import numpy as np
 from dotenv import load_dotenv
 
 # Import our project modules
-from src.data_processing.gtfs_loader import GTFSLoader
+from src.data_processing.gtfs_loader import EnhancedGTFSLoader as GTFSLoader
 from src.graph_analysis.graph_builder import TransportGraphBuilder
 from src.graph_analysis.community_detection import CommunityDetector
 from src.symbolic_ai.knowledge_base import TransportKnowledgeBase

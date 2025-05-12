@@ -54,6 +54,7 @@ The framework is specifically optimized for large-scale transport networks with 
 transport-network-analysis/
 ├── dashboard_components/        # Dashboard visualization components
 ├── data/                        # GTFS data storage
+├── docs/                        # Static HTML for GitHub Pages deployment
 ├── notebooks/                   # Jupyter notebooks for exploration
 ├── results/                     # Analysis results storage
 ├── scripts/                     # Analysis scripts
@@ -68,6 +69,7 @@ transport-network-analysis/
 ├── visualizations/              # Generated visualizations
 ├── .env                         # Environment variables
 ├── enhanced_dashboard.py        # Interactive dashboard
+├── export_dashboard_to_html.py  # HTML exporter for GitHub Pages
 └── requirements.txt             # Dependencies
 ```
 
@@ -89,6 +91,26 @@ For faster processing with reduced sample size:
 python scripts/run_analysis.py --sample-size=500
 ```
 
+### Interactive Dashboard
+
+Launch the enhanced dashboard for interactive visualization:
+
+```bash
+python enhanced_dashboard.py
+```
+
+The dashboard will be available at http://127.0.0.1:9090 in your web browser.
+
+### Static HTML Export
+
+To create a static HTML version for deployment to GitHub Pages:
+
+```bash
+python export_dashboard_to_html.py
+```
+
+This creates the necessary files in the `docs/` directory suitable for GitHub Pages deployment.
+
 ### Customizing Analysis
 
 The script supports various options:
@@ -109,14 +131,6 @@ Key parameters:
 - `--visualize`: Generate visualizations
 - `--optimize`: Optimize graph for memory usage
 - `--enhance-geocoding`: Enhance node coordinates using geocoding
-
-### Interactive Dashboard
-
-Launch the enhanced dashboard for interactive visualization:
-
-```bash
-python enhanced_dashboard.py
-```
 
 ## Analysis Steps
 

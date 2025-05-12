@@ -19,11 +19,6 @@ import plotly.graph_objects as go
 from dashboard_components.network_overview import create_network_overview_tab
 from dashboard_components.community_panels import create_communities_tab
 from dashboard_components.scenario_testing import create_scenario_testing_tab
-from dashboard_components.page_explanations import (
-    create_overview_explanation, create_communities_explanation,
-    create_critical_nodes_explanation, create_equity_explanation,
-    create_scenario_explanation
-)
 
 # Import analysis modules
 from src.utils.optimization import sample_graph_for_visualization
@@ -155,8 +150,6 @@ def prepare_dashboard_data(results):
     
     # Prepare community edges data
     community_edges = []
-
-    # Try to load from reasoning results first
     if 'reasoning_results' in results and 'interdependencies' in results['reasoning_results']:
         interdep = results['reasoning_results']['interdependencies']
         if 'community_graph' in interdep:
@@ -167,17 +160,7 @@ def prepare_dashboard_data(results):
                     'target': target,
                     'weight': edge_data.get('weight', 1)
                 })
-
-    # If no edges found, try to use a fallback JSON file
-    if not community_edges:
-        try:
-            import json
-            with open('assets/json/community_edges.json', 'r') as f:
-                community_edges = json.load(f)
-            logger.info("Loaded community edges from fallback JSON file")
-        except Exception as e:
-            logger.warning(f"Could not load fallback community edges: {e}")
-
+    
     data['community_edges'] = community_edges
     
     # Prepare community analysis data
@@ -187,18 +170,10 @@ def prepare_dashboard_data(results):
         data['community_analysis'] = {}
     
     # Prepare accessibility data
-    if 'community_accessibility' in results and results['community_accessibility']:
+    if 'community_accessibility' in results:
         data['community_accessibility'] = results['community_accessibility']
     else:
-        # Try to load from fallback JSON file
-        try:
-            import json
-            with open('assets/json/community_accessibility.json', 'r') as f:
-                data['community_accessibility'] = json.load(f)
-            logger.info("Loaded community accessibility from fallback JSON file")
-        except Exception as e:
-            logger.warning(f"Could not load fallback community accessibility: {e}")
-            data['community_accessibility'] = {}
+        data['community_accessibility'] = {}
     
     # Prepare efficiency metrics
     if 'graph_stats' in results:
@@ -212,18 +187,10 @@ def prepare_dashboard_data(results):
         data['graph_stats'] = {}
     
     # Prepare equity gaps
-    if 'equity_gaps' in results and results['equity_gaps']:
+    if 'equity_gaps' in results:
         data['equity_gaps'] = results['equity_gaps']
     else:
-        # Try to load from fallback JSON file
-        try:
-            import json
-            with open('assets/json/equity_gaps.json', 'r') as f:
-                data['equity_gaps'] = json.load(f)
-            logger.info("Loaded equity gaps from fallback JSON file")
-        except Exception as e:
-            logger.warning(f"Could not load fallback equity gaps: {e}")
-            data['equity_gaps'] = []
+        data['equity_gaps'] = []
     
     return data
 
@@ -359,28 +326,22 @@ app.layout = html.Div([
         dbc.Tabs([
             # Network Overview tab
             dbc.Tab(
-                html.Div([
-                    create_overview_explanation(),
-                    create_network_overview_tab(
-                        dashboard_data.get('graph_stats', {}),
-                        dashboard_data.get('community_df', pd.DataFrame()),
-                        dashboard_data.get('community_edges', [])
-                    )
-                ]),
+                create_network_overview_tab(
+                    dashboard_data.get('graph_stats', {}),
+                    dashboard_data.get('community_df', pd.DataFrame()),
+                    dashboard_data.get('community_edges', [])
+                ),
                 label="Network Overview",
                 tab_id="overview-tab"
             ),
             
             # Communities tab
             dbc.Tab(
-                html.Div([
-                    create_communities_explanation(),
-                    create_communities_tab(
-                        dashboard_data.get('community_analysis', {}),
-                        dashboard_data.get('community_accessibility', {}),
-                        "visualizations/communities.png"
-                    )
-                ]),
+                create_communities_tab(
+                    dashboard_data.get('community_analysis', {}),
+                    dashboard_data.get('community_accessibility', {}),
+                    "visualizations/communities.png"
+                ),
                 label="Communities",
                 tab_id="communities-tab"
             ),
@@ -388,38 +349,35 @@ app.layout = html.Div([
             # Critical Nodes tab
             dbc.Tab(
                 html.Div([
-                    create_critical_nodes_explanation(),
-                    html.Div([
-                        html.H2("Critical Nodes Analysis", className="mb-4"),
-
-                        dbc.Row([
-                            dbc.Col([
-                                html.H4("Critical Nodes Visualization", className="mb-3"),
-                                html.Img(
-                                    src="/assets/critical_nodes.png" if os.path.exists("assets/critical_nodes.png") else "",
-                                    style={'width': '100%', 'max-width': '1000px'}
-                                ) if os.path.exists("assets/critical_nodes.png") else
-                                html.Div("Critical nodes visualization not available", className="text-center p-5 bg-light")
-                            ], width=12)
-                        ], className="mb-4"),
-
-                        dbc.Row([
-                            dbc.Col([
-                                html.H4("Top Critical Nodes", className="mb-3"),
-                                dash_table.DataTable(
-                                    data=dashboard_data.get('critical_nodes_df', pd.DataFrame()).head(20).to_dict('records'),
-                                    columns=[
-                                        {'name': 'Name', 'id': 'name'},
-                                        {'name': 'Community', 'id': 'community'},
-                                        {'name': 'Centrality', 'id': 'centrality', 'type': 'numeric', 'format': {'specifier': '.6f'}},
-                                        {'name': 'Degree', 'id': 'degree'}
-                                    ],
-                                    style_header={'fontWeight': 'bold'},
-                                    style_cell={'textAlign': 'left'},
-                                    style_table={'overflowX': 'auto'}
-                                )
-                            ], width=12)
-                        ])
+                    html.H2("Critical Nodes Analysis", className="mb-4"),
+                    
+                    dbc.Row([
+                        dbc.Col([
+                            html.H4("Critical Nodes Visualization", className="mb-3"),
+                            html.Img(
+                                src="/assets/critical_nodes.png" if os.path.exists("assets/critical_nodes.png") else "",
+                                style={'width': '100%', 'max-width': '1000px'}
+                            ) if os.path.exists("assets/critical_nodes.png") else
+                            html.Div("Critical nodes visualization not available", className="text-center p-5 bg-light")
+                        ], width=12)
+                    ], className="mb-4"),
+                    
+                    dbc.Row([
+                        dbc.Col([
+                            html.H4("Top Critical Nodes", className="mb-3"),
+                            dash_table.DataTable(
+                                data=dashboard_data.get('critical_nodes_df', pd.DataFrame()).head(20).to_dict('records'),
+                                columns=[
+                                    {'name': 'Name', 'id': 'name'},
+                                    {'name': 'Community', 'id': 'community'},
+                                    {'name': 'Centrality', 'id': 'centrality', 'type': 'numeric', 'format': {'specifier': '.6f'}},
+                                    {'name': 'Degree', 'id': 'degree'}
+                                ],
+                                style_header={'fontWeight': 'bold'},
+                                style_cell={'textAlign': 'left'},
+                                style_table={'overflowX': 'auto'}
+                            )
+                        ], width=12)
                     ])
                 ]),
                 label="Critical Nodes",
@@ -429,34 +387,30 @@ app.layout = html.Div([
             # Equity Analysis tab
             dbc.Tab(
                 html.Div([
-                    create_equity_explanation(),
-                    html.Div([
-                        html.H2("Equity Analysis", className="mb-4"),
-
-                        dbc.Row([
-                            dbc.Col([
-                                html.H4("Equity Gaps", className="mb-3"),
-                                html.P(
-                                    "The analysis identified the following equity gaps in the transport network:",
-                                    className="text-muted"
-                                ),
-
-                                html.Div([
-                                    dbc.Card(
-                                        dbc.CardBody([
-                                            html.H5(gap['description'], className="card-title"),
-                                            html.P(f"Severity: {gap['severity'].title()}", className="card-text"),
-                                            html.P(f"Metric: {gap['metric']} = {gap['value']:.4f}", className="card-text"),
-                                            html.P(gap.get('details', ''), className="card-text text-muted mt-2")
-                                        ]),
-                                        className="mb-3",
-                                        color="warning" if gap['severity'] == 'medium' else "danger",
-                                        outline=True
-                                    ) for gap in dashboard_data.get('equity_gaps', [])
-                                ]) if dashboard_data.get('equity_gaps') else
-                                html.Div("No equity gaps identified", className="text-center p-5 bg-light")
-                            ], width=12)
-                        ])
+                    html.H2("Equity Analysis", className="mb-4"),
+                    
+                    dbc.Row([
+                        dbc.Col([
+                            html.H4("Equity Gaps", className="mb-3"),
+                            html.P(
+                                "The analysis identified the following equity gaps in the transport network:",
+                                className="text-muted"
+                            ),
+                            
+                            html.Div([
+                                dbc.Card(
+                                    dbc.CardBody([
+                                        html.H5(gap['description'], className="card-title"),
+                                        html.P(f"Severity: {gap['severity'].title()}", className="card-text"),
+                                        html.P(f"Metric: {gap['metric']} = {gap['value']:.4f}", className="card-text small text-muted")
+                                    ]),
+                                    className="mb-3",
+                                    color="warning" if gap['severity'] == 'medium' else "danger",
+                                    outline=True
+                                ) for gap in dashboard_data.get('equity_gaps', [])
+                            ]) if dashboard_data.get('equity_gaps') else
+                            html.Div("No equity gaps identified", className="text-center p-5 bg-light")
+                        ], width=12)
                     ])
                 ]),
                 label="Equity Analysis",
@@ -465,17 +419,14 @@ app.layout = html.Div([
             
             # Scenario Testing tab
             dbc.Tab(
-                html.Div([
-                    create_scenario_explanation(),
-                    create_scenario_testing_tab(
-                        dashboard_data.get('critical_nodes_df', pd.DataFrame()),
-                        dashboard_data.get('community_df', pd.DataFrame()),
-                        dashboard_data.get('community_analysis', {}),
-                        simulate_node_removal,
-                        simulate_connection_addition,
-                        simulate_network_evolution
-                    )
-                ]),
+                create_scenario_testing_tab(
+                    dashboard_data.get('critical_nodes_df', pd.DataFrame()),
+                    dashboard_data.get('community_df', pd.DataFrame()),
+                    dashboard_data.get('community_analysis', {}),
+                    simulate_node_removal,
+                    simulate_connection_addition,
+                    simulate_network_evolution
+                ),
                 label="Scenario Testing",
                 tab_id="scenario-tab"
             )
@@ -498,8 +449,8 @@ if __name__ == '__main__':
     print("Enhanced Transport Network Analysis Dashboard")
     print("==================================================")
     print("\nDashboard is running on:")
-    print("http://127.0.0.1:9090")
-    print("http://localhost:9090")
+    print("http://127.0.0.1:8050")
+    print("http://localhost:8050")
     print("\nPress CTRL+C to stop the server")
     print("==================================================\n")
-    app.run(debug=False, host='127.0.0.1', port=9090)
+    app.run(debug=False, host='127.0.0.1', port=8050)

@@ -1,265 +1,216 @@
 """
-Scenario testing components for the dashboard.
+Scenario testing component for the transport network dashboard.
 """
 
 import dash
-from dash import html, dcc, dash_table, callback
-from dash.dependencies import Input, Output, State
+from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
-import plotly.express as px
-import plotly.graph_objects as go
 import pandas as pd
-import networkx as nx
-import numpy as np
-from typing import Dict, Any, List, Callable
 
-def create_node_removal_panel(
-    critical_nodes_df: pd.DataFrame,
-    simulate_callback: Callable
-) -> html.Div:
+def create_scenario_testing_tab(critical_nodes_df, community_df, community_analysis, 
+                              simulate_node_removal, simulate_connection_addition, 
+                              simulate_network_evolution):
     """
-    Create a panel for testing node removal scenarios.
+    Create the Scenario Testing tab content.
     
     Args:
         critical_nodes_df: DataFrame with critical nodes data
-        simulate_callback: Callback function to simulate node removal
+        community_df: DataFrame with community data
+        community_analysis: Dictionary with community analysis
+        simulate_node_removal: Callback function for node removal simulation
+        simulate_connection_addition: Callback function for connection addition simulation
+        simulate_network_evolution: Callback function for network evolution simulation
         
     Returns:
-        Dash HTML component
+        Dash component
     """
-    return html.Div([
-        html.H4("Node Removal Simulation", className="mb-3"),
-        
-        html.P(
-            "Test how removing critical nodes affects the network. "
-            "Select nodes to remove and run the simulation.",
-            className="text-muted"
-        ),
-        
-        dbc.Row([
-            dbc.Col([
-                # Dropdown to select nodes
-                html.Label("Select nodes to remove:"),
-                dcc.Dropdown(
-                    id='node-removal-dropdown',
-                    options=[
-                        {'label': f"{row['name']} (ID: {row['node_id']})", 'value': row['node_id']}
-                        for _, row in critical_nodes_df.iterrows()
-                    ],
-                    placeholder="Select nodes to remove",
-                    multi=True,
-                    className="mb-3"
-                ),
+    # Prepare critical nodes dropdown options
+    node_options = []
+    if not critical_nodes_df.empty:
+        node_options = [
+            {"label": f"{row['name']} (Community {row['community']})", "value": row['node_id']}
+            for _, row in critical_nodes_df.iterrows()
+        ]
+    
+    # Prepare community pairs dropdown options
+    community_pairs = []
+    if not community_df.empty:
+        communities = sorted(community_df['community_id'].unique())
+        for i in range(len(communities)):
+            for j in range(i+1, len(communities)):
+                comm1 = communities[i]
+                comm2 = communities[j]
+                community_pairs.append({
+                    "label": f"Community {comm1} ↔ Community {comm2}",
+                    "value": f"{comm1}-{comm2}"
+                })
+    
+    # Prepare vulnerable communities data
+    vulnerable_communities = []
+    
+    if community_analysis:
+        for comm_id, data in community_analysis.items():
+            if 'avg_degree' in data and data['avg_degree'] < 2:
+                vulnerability = "High"
+            elif 'density' in data and data['density'] < 0.2:
+                vulnerability = "Medium" 
+            else:
+                vulnerability = "Low"
                 
-                # Simulation button
-                dbc.Button(
-                    "Run Simulation",
-                    id="run-node-removal-btn",
-                    color="primary",
-                    className="mt-2"
-                )
-            ], width=12)
-        ]),
-        
-        # Results container
-        html.Div(id="node-removal-results", className="mt-4")
-    ])
-
-def create_connection_addition_panel(
-    community_data: pd.DataFrame,
-    simulate_callback: Callable
-) -> html.Div:
-    """
-    Create a panel for testing new connection scenarios.
-    
-    Args:
-        community_data: DataFrame with community data
-        simulate_callback: Callback function to simulate new connections
-        
-    Returns:
-        Dash HTML component
-    """
-    # Create options for community pairs
-    community_ids = community_data['community_id'].unique()
-    pair_options = []
-    
-    for i, c1 in enumerate(community_ids):
-        for c2 in community_ids[i+1:]:
-            pair_options.append({
-                'label': f"Community {c1} - Community {c2}",
-                'value': f"{c1}-{c2}"
+            vulnerable_communities.append({
+                "community_id": comm_id,
+                "size": data.get("size", 0),
+                "density": data.get("density", 0),
+                "vulnerability": vulnerability
             })
     
-    return html.Div([
-        html.H4("Connection Addition Simulation", className="mb-3"),
-        
-        html.P(
-            "Test how adding new connections between communities affects the network. "
-            "Select community pairs to connect and run the simulation.",
-            className="text-muted"
-        ),
-        
-        dbc.Row([
-            dbc.Col([
-                # Dropdown to select community pairs
-                html.Label("Select community pairs to connect:"),
-                dcc.Dropdown(
-                    id='community-pair-dropdown',
-                    options=pair_options,
-                    placeholder="Select community pairs to connect",
-                    multi=True,
-                    className="mb-3"
-                ),
-                
-                # Number of connections to add
-                html.Label("Number of connections to add per pair:"),
-                dcc.Slider(
-                    id='connections-slider',
-                    min=1,
-                    max=5,
-                    step=1,
-                    value=2,
-                    marks={i: str(i) for i in range(1, 6)},
-                    className="mb-3"
-                ),
-                
-                # Simulation button
-                dbc.Button(
-                    "Run Simulation",
-                    id="run-connection-btn",
-                    color="success",
-                    className="mt-2"
-                )
-            ], width=12)
-        ]),
-        
-        # Results container
-        html.Div(id="connection-results", className="mt-4")
-    ])
-
-def create_network_evolution_panel(
-    community_metrics: Dict[int, Dict[str, Any]],
-    simulate_callback: Callable
-) -> html.Div:
-    """
-    Create a panel for testing network evolution scenarios.
+    vulnerable_df = pd.DataFrame(vulnerable_communities)
     
-    Args:
-        community_metrics: Dictionary with community metrics
-        simulate_callback: Callback function to simulate network evolution
-        
-    Returns:
-        Dash HTML component
-    """
-    # Sort communities by vulnerability
-    vulnerability = []
-    for comm_id, metrics in community_metrics.items():
-        vulnerability.append({
-            'community_id': comm_id,
-            'vulnerability': metrics.get('vulnerability', 0),
-            'size': metrics.get('size', 0)
-        })
-    
-    vulnerability_df = pd.DataFrame(vulnerability)
-    vulnerability_df = vulnerability_df.sort_values('vulnerability', ascending=False)
-    
-    return html.Div([
-        html.H4("Network Evolution Simulation", className="mb-3"),
-        
-        html.P(
-            "Test how improving connectivity for vulnerable communities affects the network. "
-            "Select communities to improve and run the simulation.",
-            className="text-muted"
-        ),
-        
-        dbc.Row([
-            dbc.Col([
-                # Table of vulnerable communities
-                html.Label("Vulnerable Communities:"),
-                dash_table.DataTable(
-                    id='vulnerable-communities-table',
-                    columns=[
-                        {'name': 'Community ID', 'id': 'community_id'},
-                        {'name': 'Vulnerability', 'id': 'vulnerability', 'type': 'numeric', 'format': {'specifier': '.4f'}},
-                        {'name': 'Size', 'id': 'size'}
-                    ],
-                    data=vulnerability_df.head(10).to_dict('records'),
-                    row_selectable='multi',
-                    selected_rows=[0, 1, 2],  # Select top 3 by default
-                    style_cell={'textAlign': 'left'},
-                    style_header={'fontWeight': 'bold'},
-                    style_table={'overflowX': 'auto'}
-                ),
-                
-                # Improvement strategy dropdown
-                html.Label("Improvement Strategy:", className="mt-3"),
-                dcc.Dropdown(
-                    id='improvement-strategy-dropdown',
-                    options=[
-                        {'label': 'Connect to nearest communities', 'value': 'nearest'},
-                        {'label': 'Connect to largest communities', 'value': 'largest'},
-                        {'label': 'Connect to central communities', 'value': 'central'}
-                    ],
-                    value='nearest',
-                    className="mb-3"
-                ),
-                
-                # Simulation button
-                dbc.Button(
-                    "Run Simulation",
-                    id="run-evolution-btn",
-                    color="info",
-                    className="mt-2"
-                )
-            ], width=12)
-        ]),
-        
-        # Results container
-        html.Div(id="evolution-results", className="mt-4")
-    ])
-
-def create_scenario_testing_tab(
-    critical_nodes_df: pd.DataFrame,
-    community_data: pd.DataFrame,
-    community_metrics: Dict[int, Dict[str, Any]],
-    node_removal_callback: Callable,
-    connection_callback: Callable,
-    evolution_callback: Callable
-) -> html.Div:
-    """
-    Create the scenario testing tab.
-    
-    Args:
-        critical_nodes_df: DataFrame with critical nodes data
-        community_data: DataFrame with community data
-        community_metrics: Dictionary with community metrics
-        node_removal_callback: Callback for node removal simulation
-        connection_callback: Callback for connection addition simulation
-        evolution_callback: Callback for network evolution simulation
-        
-    Returns:
-        Dash HTML component
-    """
+    # Create the tab content
     return html.Div([
         html.H2("Scenario Testing", className="mb-4"),
         
         dbc.Tabs([
-            dbc.Tab(
-                create_node_removal_panel(critical_nodes_df, node_removal_callback),
-                label="Node Removal",
-                tab_id="node-removal-tab"
-            ),
+            # Node Removal Simulation
+            dbc.Tab([
+                html.Div([
+                    html.H3("Critical Node Failure Simulation", className="mb-3"),
+                    html.P([
+                        "This tool simulates the impact of removing critical nodes from the network, ",
+                        "which helps identify vulnerabilities and plan for contingencies."
+                    ]),
+                    
+                    # Node selection
+                    html.Div([
+                        html.Label("Select nodes to remove:"),
+                        dcc.Dropdown(
+                            id="node-removal-dropdown",
+                            options=node_options,
+                            value=[],
+                            multi=True,
+                            style={"width": "100%"}
+                        ),
+                        html.Button(
+                            "Run Simulation", 
+                            id="run-node-removal-btn",
+                            className="btn btn-primary mt-3"
+                        )
+                    ], className="mb-4"),
+                    
+                    # Results display area
+                    html.Div(id="node-removal-results")
+                ], className="p-3")
+            ], label="Node Failure", tab_id="node-failure-tab"),
             
-            dbc.Tab(
-                create_connection_addition_panel(community_data, connection_callback),
-                label="Add Connections",
-                tab_id="add-connections-tab"
-            ),
+            # Connection Addition Simulation
+            dbc.Tab([
+                html.Div([
+                    html.H3("Connection Enhancement Simulation", className="mb-3"),
+                    html.P([
+                        "This tool simulates the effect of adding new connections between communities, ",
+                        "which helps plan network expansions and improvements."
+                    ]),
+                    
+                    # Community pair selection
+                    html.Div([
+                        html.Label("Select community pairs to connect:"),
+                        dcc.Dropdown(
+                            id="community-pair-dropdown",
+                            options=community_pairs,
+                            value=[],
+                            multi=True,
+                            style={"width": "100%"}
+                        ),
+                        
+                        html.Div([
+                            html.Label("Number of connections to add:"),
+                            dcc.Slider(
+                                id="connections-slider",
+                                min=1,
+                                max=10,
+                                step=1,
+                                value=3,
+                                marks={i: str(i) for i in range(1, 11)},
+                                className="mb-4"
+                            )
+                        ], className="mt-3"),
+                        
+                        html.Button(
+                            "Run Simulation", 
+                            id="run-connection-btn",
+                            className="btn btn-primary mt-3"
+                        )
+                    ], className="mb-4"),
+                    
+                    # Results display area
+                    html.Div(id="connection-results")
+                ], className="p-3")
+            ], label="Connection Enhancement", tab_id="connection-tab"),
             
-            dbc.Tab(
-                create_network_evolution_panel(community_metrics, evolution_callback),
-                label="Network Evolution",
-                tab_id="network-evolution-tab"
-            )
-        ], id="scenario-tabs")
-    ])
+            # Network Evolution Simulation
+            dbc.Tab([
+                html.Div([
+                    html.H3("Network Evolution Simulation", className="mb-3"),
+                    html.P([
+                        "This tool simulates long-term network evolution strategies aimed at ",
+                        "improving overall connectivity, equity, and resilience."
+                    ]),
+                    
+                    # Vulnerable communities table
+                    html.Div([
+                        html.Label("Select vulnerable communities to improve:"),
+                        dash_table.DataTable(
+                            id="vulnerable-communities-table",
+                            columns=[
+                                {"name": "Community ID", "id": "community_id"},
+                                {"name": "Size", "id": "size"},
+                                {"name": "Density", "id": "density", "type": "numeric", "format": {"specifier": ".4f"}},
+                                {"name": "Vulnerability", "id": "vulnerability"}
+                            ],
+                            data=vulnerable_df.to_dict('records'),
+                            style_cell={'textAlign': 'left'},
+                            style_data_conditional=[
+                                {
+                                    'if': {'filter_query': '{vulnerability} = "High"'},
+                                    'backgroundColor': '#FFCCCC'
+                                },
+                                {
+                                    'if': {'filter_query': '{vulnerability} = "Medium"'},
+                                    'backgroundColor': '#FFFFCC'
+                                }
+                            ],
+                            style_header={'fontWeight': 'bold'},
+                            row_selectable="multi",
+                            selected_rows=[],
+                            page_size=10
+                        )
+                    ], className="mb-4"),
+                    
+                    # Strategy selection
+                    html.Div([
+                        html.Label("Select improvement strategy:"),
+                        dcc.Dropdown(
+                            id="improvement-strategy-dropdown",
+                            options=[
+                                {"label": "Add new direct connections", "value": "direct_connections"},
+                                {"label": "Improve service frequency", "value": "frequency"},
+                                {"label": "Create hub-and-spoke structure", "value": "hub_spoke"},
+                                {"label": "Balanced multi-modal approach", "value": "multi_modal"}
+                            ],
+                            value="balanced",
+                            style={"width": "100%"}
+                        ),
+                        
+                        html.Button(
+                            "Run Simulation", 
+                            id="run-evolution-btn",
+                            className="btn btn-primary mt-3"
+                        )
+                    ], className="mb-4"),
+                    
+                    # Results display area
+                    html.Div(id="evolution-results")
+                ], className="p-3")
+            ], label="Network Evolution", tab_id="evolution-tab")
+        ], id="scenario-tabs", active_tab="node-failure-tab"),
+    ], className="p-3")
